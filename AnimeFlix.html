@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AnimeFlix</title>
+<style>
+:root{--bg:#111;--card:#1b1b1b;--line:#2a2a2a;--text:#f2f2f2;--muted:#a0a0a0;--red:#e0243a;--star:#f5c518;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{background:var(--bg);color:var(--text)}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;border:none;color:inherit}
+header{display:flex;align-items:center;gap:20px;padding:14px 24px;background:#000b;flex-wrap:wrap}
+.logo{font-size:2.2rem;font-weight:800}.logo span{color:var(--red)}
+nav{display:flex;gap:18px;color:var(--muted);flex:1}
+nav a:hover{color:var(--text)}
+.search{background:var(--card);border-radius:6px;padding:10px 14px;border:1px solid var(--line);color:var(--text);min-width:200px}
+.btn{background:var(--red);padding:9px 18px;border-radius:6px;font-weight:600}
+.btn.ghost{background:var(--card);border:1px solid var(--line)}
+.alpha{display:flex;gap:4px;overflow-x:auto;padding:8px 24px;background:#181818;border-bottom:1px solid var(--line)}
+.alpha button{background:none;color:var(--muted);padding:4px 9px;border-radius:4px;font-weight:600}
+.alpha button:hover,.alpha button.on{color:#fff;background:var(--red)}
+.layout{display:grid;grid-template-columns:1fr 300px;gap:24px;max-width:1280px;margin:0 auto;padding:24px}
+h2{border-left:4px solid var(--red);padding-left:12px;margin-bottom:16px;font-size:1.4rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px;margin-bottom:32px}
+.card{cursor:pointer}
+.poster{aspect-ratio:2/3;border-radius:8px;position:relative;overflow:hidden;transition:transform .2s}
+.card:hover .poster{transform:scale(1.04)}
+.poster b{position:absolute;bottom:8px;left:8px;font-size:2rem;opacity:.9}
+.rate{position:absolute;bottom:6px;right:6px;background:#000a;padding:2px 7px;border-radius:4px;font-size:.85rem}
+.rate::before{content:"★ ";color:var(--star)}
+.card p{margin-top:8px;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+aside li{list-style:none;display:flex;gap:12px;background:var(--card);margin-bottom:12px;cursor:pointer;border-radius:6px;overflow:hidden}
+aside .poster{width:80px;aspect-ratio:2/3;border-radius:0;flex:none}
+aside .poster b{font-size:1.2rem}
+aside small{color:var(--muted)}
+aside div.info{padding:10px 0}
+.eps{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.ep{background:var(--card);border-radius:8px;overflow:hidden;cursor:pointer}
+.ep .poster{aspect-ratio:16/9;border-radius:0}
+.ep p{padding:10px}
+.modal{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;z-index:10;padding:16px}
+.modal.show{display:flex}
+.box{background:var(--card);border-radius:12px;padding:24px;width:100%;max-width:420px}
+.box.wide{max-width:800px}
+.box input{width:100%;padding:11px;margin:8px 0;border-radius:6px;border:1px solid var(--line);background:#111;color:var(--text)}
+.box h3{margin-bottom:10px}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tabs button{flex:1;padding:9px;background:#111;border-radius:6px}
+.tabs button.on{background:var(--red)}
+.msg{color:#ff7a8a;min-height:1.3em;font-size:.9rem;margin:4px 0}
+.player{aspect-ratio:16/9;background:#000;border-radius:8px;display:grid;place-items:center;text-align:center;color:var(--muted);padding:16px;margin:12px 0}
+#matrix{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:.4}
+.senha{position:relative}
+.senha input{padding-right:46px}
+.senha .olho{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;padding:6px 9px;font-size:1.1rem}
+#area,#conta{display:inline-flex;align-items:center}
+.avatar{position:relative;width:46px;height:46px;border-radius:50%;background:none;padding:0;flex:none}
+.avatar .ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--red),var(--star),#22c4dd,#a855f7,var(--red))}
+.avatar .foto{position:absolute;inset:3px;width:calc(100% - 6px);height:calc(100% - 6px);border-radius:50%;object-fit:cover;background:#111;display:grid;place-items:center;font-weight:700;color:var(--text)}
+.gira .ring{animation:gira 3s linear infinite}
+.pulsa .ring{animation:pulsa 1.4s ease-in-out infinite}
+.arco .ring{animation:gira 3s linear infinite,cor 4s linear infinite}
+.neon .ring{background:var(--red);animation:brilho 1.2s ease-in-out infinite alternate}
+@keyframes gira{to{transform:rotate(360deg)}}
+@keyframes pulsa{50%{transform:scale(1.14);opacity:.7}}
+@keyframes cor{to{filter:hue-rotate(360deg)}}
+@keyframes brilho{from{box-shadow:0 0 3px var(--red)}to{box-shadow:0 0 16px 3px var(--red)}}
+@media(prefers-reduced-motion:reduce){.ring{animation:none!important}}
+.box{max-height:92vh;overflow:auto}
+.box select,.box textarea{width:100%;padding:11px;margin:8px 0;border-radius:6px;border:1px solid var(--line);background:#111;color:var(--text)}
+.card{position:relative}.card:hover{z-index:5}
+.poster{background-size:200% 200%}
+.card:hover .poster{transform:scale(1.18);box-shadow:0 10px 30px #000a;animation:cena 3s ease infinite}
+@keyframes cena{50%{background-position:100% 100%}}
+.sin{position:absolute;inset:0;background:linear-gradient(#0000,#000e 45%);padding:8px;display:flex;flex-direction:column;justify-content:flex-end;font-size:.72rem;line-height:1.3;opacity:0;transition:opacity .2s;pointer-events:none}
+.card:hover .sin{opacity:1}
+.sin small{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.prev{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
+.prev.on{opacity:1}
+.sec{margin-bottom:28px}
+.det video,.det .player{width:100%;aspect-ratio:16/9;background:#000;border-radius:8px;margin:10px 0}
+.rodape{display:flex;gap:24px;justify-content:space-between;flex-wrap:wrap;padding:20px 24px;background:#000;color:var(--muted);margin-top:24px}
+.link{background:none;color:var(--muted);text-decoration:underline}
+.acess{--bg:#555e6b;--card:#656f7d;--line:#66b3ff;--muted:#e6ebf2;--red:#c81d33}
+.acess header{background:#3f4651;border-bottom:2px solid var(--line)}
+.acess .rodape{background:#3f4651;border-top:2px solid var(--line)}
+.acess .alpha{background:#4a525e!important;border-bottom:1px solid var(--line)}
+.acess .poster,.acess .ep,.acess aside li,.acess .box{border:2px solid var(--line)}
+.acess aside .poster{border:0}
+.acess .box input,.acess .box select,.acess .box textarea,.acess .search,.acess .tabs button{background:#3f4651;border:1px solid var(--line)}
+.acess .tabs button.on{background:var(--red)}
+.acess aside{border-left:2px solid var(--line);padding-left:20px}
+.acess h2{border-left-color:var(--line)}
+.acess .foto{background:#3f4651}
+.acess :focus-visible{outline:3px solid #66b3ff;outline-offset:2px}
+/* ===== BOTÕES LIQUID GLASS (vidro líquido) ===== */
+.btn{border-radius:999px}
+.liquid,.btn.ghost,.tabs button,#generos button{position:relative;overflow:hidden;border-radius:999px;color:var(--text);background:linear-gradient(145deg,#ffffff2e,#ffffff0d);border:1px solid #ffffff40;-webkit-backdrop-filter:blur(10px) saturate(160%);backdrop-filter:blur(10px) saturate(160%);box-shadow:inset 0 1px 1px #ffffff66,inset 0 -6px 12px #0000002e,0 6px 16px #0006;transition:transform .2s,box-shadow .25s,background .25s}
+.liquid::before,.btn::before,.tabs button::before,#generos button::before{content:'';position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle at var(--x,50%) var(--y,0%),#ffffff59,transparent 55%);opacity:0;transition:opacity .25s;pointer-events:none}
+.liquid:hover::before,.btn:hover::before,.tabs button:hover::before,#generos button:hover::before{opacity:1}
+.liquid:hover,.btn.ghost:hover,.tabs button:hover,#generos button:hover{transform:translateY(-2px) scale(1.03)}
+.liquid:active,.btn.ghost:active,.tabs button:active,#generos button:active{transform:scale(.95)}
+#generos{gap:10px;padding:14px 24px}
+#generos button{padding:8px 18px;font-weight:600}
+.liquid.on,.tabs button.on,#generos button.on{color:#fff;border-color:#cfe3ff;background:linear-gradient(145deg,#9cc6ff,#3b82f6);box-shadow:0 0 18px #3b82f6aa,inset 0 1px 1px #fffa,inset 0 -6px 12px #0000002e}
+.acess .btn.ghost,.acess #generos button{background:#3f4651;border:1px solid var(--line);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.acess #generos button.on{background:var(--red);box-shadow:none}
+@media(prefers-reduced-motion:reduce){.liquid,.btn,.tabs button,#generos button{transition:none}.liquid:hover,.btn.ghost:hover,.tabs button:hover,#generos button:hover{transform:none}}
+@media(max-width:850px){.layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<canvas id="matrix"></canvas>
+<header>
+  <div class="logo">Anime<span>Flix</span></div>
+  <nav><a href="#">Início</a><a href="#">Animes</a><a href="#">Filmes</a><a href="#generos">Gêneros</a><a href="#" id="minhaLista">Minha lista</a></nav>
+  <button class="btn ghost" id="acess" aria-pressed="false" aria-label="Acessibilidade" title="Acessibilidade (alto contraste)" style="font-size:1.2rem">☀</button>
+  <span id="conta"></span>
+  <input class="search" id="busca" placeholder="Buscar...">
+  <span id="area"></span>
+</header>
+<div class="alpha" id="alpha"></div>
+<div class="alpha" id="generos" style="background:#1f1f1f"></div>
+
+<div class="layout">
+  <main>
+    <h2 id="tituloGrade">Animes Online</h2>
+    <div class="grid" id="grade"></div>
+    <div id="lanc"></div><div id="maisv"></div>
+    <h2>Últimos Episódios</h2>
+    <div class="eps" id="eps"></div>
+  </main>
+  <aside><h2>Populares</h2><ul id="pop"></ul></aside>
+</div>
+
+<footer class='rodape'><span>© AnimeFlix</span><a id='mail' href='#'>✉ <span id='mailTxt'></span></a></footer>
+
+<div class='modal' id='mDetalhe'><div class='box wide det' id='detCorpo'></div></div>
+<div class='modal' id='mAdmin'><div class='box wide' id='admCorpo'></div></div>
+
+<div class="modal" id="mLogin"><div class="box">
+  <div class="tabs"><button id="tEntrar" class="on">Entrar</button><button id="tCriar">Criar conta</button></div>
+  <h3 id="loginTitulo">Entrar</h3>
+  <input id="apelido" type="text" placeholder="Apelido ou e-mail" autocomplete="username" maxlength="80">
+  <input id="email" type="email" placeholder="E-mail (para recuperar a senha)" autocomplete="email" style="display:none">
+  <div class="senha"><input id="senha" type="password" placeholder="Senha (mín. 6 caracteres)"><button type="button" class="olho" data-alvo="senha" aria-label="Mostrar senha">👁</button></div>
+  <div class="senha" id="boxConf" style="display:none"><input id="senha2" type="password" placeholder="Confirmar senha"><button type="button" class="olho" data-alvo="senha2" aria-label="Mostrar senha">👁</button></div>
+  <div class="msg" id="msg"></div>
+  <div id="esqueci" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px"><button type="button" class="link" id="esqSenha">Esqueci minha senha</button><button type="button" class="link" id="esqApelido">Esqueci meu apelido</button></div>
+  <button class="btn" id="enviar" style="width:100%">Entrar</button>
+  <button class="btn ghost" id="fecharLogin" style="width:100%;margin-top:8px">Cancelar</button>
+</div></div>
+
+<div class="modal" id="mRecuperar"><div class="box">
+  <h3 id='rTitulo'>Recuperar senha</h3>
+  <div id="rPasso1">
+    <p id='rTexto' style="color:var(--muted)">Digite o e-mail cadastrado. Vamos enviar um código de 6 números.</p>
+    <input id="rEmail" type="email" placeholder="Seu e-mail" autocomplete="email">
+    <button class="btn" id="rEnviar" style="width:100%">Enviar código</button>
+    <div id='rApBox' style='background:#111;border:1px dashed var(--line);border-radius:8px;padding:10px;font-size:.9rem;margin-top:8px;display:none'></div>
+  </div>
+  <div id="rPasso2" style="display:none">
+    <div id="rCaixa" style="background:#111;border:1px dashed var(--line);border-radius:8px;padding:10px;font-size:.9rem;margin-bottom:8px;display:none"></div>
+    <input id="rCodigo" inputmode="numeric" maxlength="6" placeholder="Código de 6 números">
+    <div class="senha"><input id="rSenha" type="password" placeholder="Nova senha (mín. 6)"><button type="button" class="olho" data-alvo="rSenha" aria-label="Mostrar senha">👁</button></div>
+    <div class="senha"><input id="rSenha2" type="password" placeholder="Confirmar nova senha"><button type="button" class="olho" data-alvo="rSenha2" aria-label="Mostrar senha">👁</button></div>
+    <button class="btn" id="rTrocar" style="width:100%;margin-top:6px">Trocar senha</button>
+  </div>
+  <div class="msg" id="rMsg"></div>
+  <button class="btn ghost" id="rFechar" style="width:100%">Cancelar</button>
+</div></div>
+
+<div class="modal" id="mPerfil"><div class="box">
+  <h3>Seu perfil</h3>
+  <div class='tabs' id='pAbas' style='flex-wrap:wrap'><button data-p='p1' class='on'>🎨 Foto</button><button data-p='p2'>🌐 Idioma</button><button data-p='p3'>🛡 Admin</button><button data-p='p4'>⭐ Lista</button><button data-p='p5'>⬇ Offline</button><button data-p='p6'>🔒 Conta</button></div>
+  <div class='pp' id='p1'>
+  <p style="color:var(--muted)">Animação da borda:</p>
+  <div class="tabs" id="anims" style="flex-wrap:wrap;margin-top:8px">
+    <button data-a="gira">Girando</button><button data-a="pulsa">Pulsando</button><button data-a="arco">Arco-íris</button><button data-a="neon">Neon</button><button data-a="nenhuma">Parada</button>
+  </div>
+  <p style="color:var(--muted)">Foto de perfil:</p>
+  <input type="file" id="foto" accept="image/*">
+  <div class="msg" id="msgPerfil"></div>
+  <button class="btn ghost" id="tirarFoto" style="width:100%;margin-bottom:8px">Remover foto</button>
+  </div>
+  <div class='pp' id='p2' style='display:none'></div><div class='pp' id='p3' style='display:none'></div><div class='pp' id='p4' style='display:none'></div><div class='pp' id='p5' style='display:none'></div><div class='pp' id='p6' style='display:none'></div>
+  <button class="btn" id="fecharPerfil" style="width:100%">Pronto</button>
+</div></div>
+
+<div class="modal" id="mPlayer"><div class="box wide">
+  <h3 id="pTitulo"></h3>
+  <div class="player" id="pVideo"></div>
+  <p id="pInfo" style="color:var(--muted)"></p>
+  <button class="btn" id="fecharPlayer" style="margin-top:14px">Fechar</button>
+</div></div>
+
+<script>
+// ===== 1. DADOS (fictícios) =====
+const ANIMES=[
+ {t:"Estrela do Norte",n:8.4,a:2021,h:260},{t:"Lâmina da Aurora",n:8.1,a:2019,h:350},
+ {t:"Time dos Sonhos",n:8.3,a:2022,h:28},{t:"Caçadores de Nuvens",n:8.2,a:2018,h:150},
+ {t:"Reino dos Sete Mares",n:8.0,a:2020,h:200},{t:"Dragão de Cristal",n:7.9,a:2023,h:300},
+ {t:"Academia dos Heróis",n:8.2,a:2016,h:50},{t:"Trevo da Sorte",n:8.0,a:2017,h:120},
+ {t:"Cidade Espelho",n:7.8,a:2024,h:180},{t:"Ninja do Amanhã",n:8.1,a:2007,h:20},
+ {t:"Sword Art Online",n:7.5,a:2012,h:215,g:"RPG"},{t:"Shangri-La Frontier",n:8.0,a:2023,h:130,g:"RPG"},
+ {t:"Operação Relâmpago",n:7.2,a:2022,h:10,g:"Ação"},{t:"Velocidade Final",n:7.0,a:2021,h:40,g:"Ação"},
+ {t:"A Casa do Lago",n:6.9,a:2020,h:280,g:"Terror"},{t:"Noite sem Fim",n:7.1,a:2023,h:330,g:"Terror"},
+ {t:"Férias Caóticas",n:6.8,a:2019,h:55,g:"Comédia"},{t:"Meu Chefe é um Gato",n:7.0,a:2024,h:90,g:"Comédia"}
+];
+const cor=h=>`linear-gradient(160deg,hsl(${h} 70% 55%),hsl(${(h+60)%360} 60% 20%))`;
+
+// ===== 2. TELA =====
+const $=id=>document.getElementById(id);
+function poster(a,extra=""){return `<div class="poster" style="background:${cor(a.h)}"><b>${a.t[0]}</b>${extra}</div>`}
+function desenha(lista,titulo){
+  $("grade").innerHTML=lista.map(a=>`<div class="card" data-t="${a.t}">${poster(a,`<span class="rate">${a.n}</span>`)}<p>${a.t}</p></div>`).join("");
+  $("tituloGrade").textContent=titulo||(lista.length===ANIMES.length?"Animes Online":`Resultados (${lista.length})`);
+}
+$("pop").innerHTML=ANIMES.slice().sort((x,y)=>y.n-x.n).slice(0,4).map(a=>`<li data-t="${a.t}">${poster(a)}<div class="info"><b>${a.t}</b><br><small>${a.a}</small><br><small>★ ${a.n}</small></div></li>`).join("");
+$("eps").innerHTML=ANIMES.slice(0,3).map((a,i)=>`<div class="ep" data-t="${a.t}">${poster(a)}<p>${a.t} - Episódio ${i+5}</p></div>`).join("");
+$("alpha").innerHTML=["ALL",..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].map(l=>`<button data-l="${l}">${l}</button>`).join("");
+// ===== 2.5 GÊNEROS =====
+const GENEROS={"Todos":"Animes Online","Ação":"Filmes de Ação","Terror":"Filmes de Terror","Comédia":"Filmes de Comédia","RPG":"Animes de RPG","Manhwa":"Manhwas","Mangá":"Mangás","Novela":"Novelas","Donghua":"Donghuas"};
+$("generos").innerHTML=Object.keys(GENEROS).map(g=>`<button data-g="${g}">${g=="RPG"?"Animes de RPG":g}</button>`).join("");
+$("generos").addEventListener("click",e=>{
+  const g=e.target.dataset.g; if(!g)return;
+  [...$("generos").children].forEach(b=>b.classList.toggle("on",b===e.target));
+  desenha(g==="Todos"?ANIMES:ANIMES.filter(a=>a.g===g),GENEROS[g]);
+});
+
+// ===== 3. BUSCA E FILTRO =====
+$("busca").addEventListener("input",e=>{
+  const q=e.target.value.toLowerCase();
+  desenha(ANIMES.filter(a=>a.t.toLowerCase().includes(q)));
+});
+$("alpha").addEventListener("click",e=>{
+  const l=e.target.dataset.l; if(!l)return;
+  desenha(l==="ALL"?ANIMES:ANIMES.filter(a=>a.t.toUpperCase().startsWith(l)));
+});
+
+// ===== 4. LOGIN (simulado no navegador) =====
+let modoCriar=false,usuario=null;
+const guarda={
+  ler(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},
+  gravar(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+function mostraArea(){
+  $("conta").innerHTML=usuario
+   ?`<span style="display:inline-flex;align-items:center;gap:10px"><button class="avatar ${perfil().anim}" id="abrirPerfil" aria-label="Seu perfil" title="Seu perfil"><i class="ring"></i>${fotoHtml()}</button><span>${esc(usuario.apelido)}</span><button class="btn ghost" id="sair">Sair</button></span>`
+   :``;
+  $("area").innerHTML=usuario?``:`<button class="btn" id="abrirLogin">Entrar</button>`;
+}
+function modo(criar){
+  modoCriar=criar;
+  $("boxConf").style.display=criar?"block":"none";$("email").style.display=criar?"block":"none";$("esqueci").style.display=criar?"none":"flex";$("apelido").placeholder=criar?"Apelido":"Apelido ou e-mail";$("apelido").maxLength=criar?20:80;$("msg").style.color="";
+  $("tEntrar").classList.toggle("on",!criar);$("tCriar").classList.toggle("on",criar);
+  $("loginTitulo").textContent=criar?"Criar conta":"Entrar";
+  $("enviar").textContent=criar?"Criar conta":"Entrar";$("msg").textContent="";
+}
+$("tEntrar").onclick=()=>modo(false);$("tCriar").onclick=()=>modo(true);
+$("fecharLogin").onclick=()=>$("mLogin").classList.remove("show");
+document.addEventListener("click",e=>{
+  if(e.target.id==="abrirLogin")$("mLogin").classList.add("show");
+  if(e.target.id==="sair"){usuario=null;guarda.gravar("sessao",null);mostraArea();}
+});
+$("enviar").onclick=()=>{
+  $("msg").style.color="";const apelido=$("apelido").value.trim(),chave=apelido.toLowerCase(),senha=$("senha").value,email=$("email").value.trim().toLowerCase();
+  const lista=guarda.ler("contas")||[];
+  if(modoCriar&&!/^[\w.-]{3,20}$/.test(apelido)){$("msg").textContent="Apelido: 3 a 20 letras ou números, sem espaços.";return}
+  if(senha.length<6){$("msg").textContent="A senha precisa de 6 ou mais caracteres.";return}
+  if(modoCriar){
+    if(senha!==$("senha2").value){$("msg").textContent="As senhas não são iguais.";return}
+    if(!/^\S+@\S+\.\S+$/.test(email)){$("msg").textContent="Digite um e-mail válido (usado para recuperar a senha).";return}
+    if(lista.some(u=>u.email===email)){$("msg").textContent="Esse e-mail já tem conta.";return}
+    if(lista.some(u=>u.chave===chave)){$("msg").textContent="Esse apelido já está em uso.";return}
+    lista.push({apelido,chave,email,senha});guarda.gravar("contas",lista);usuario={apelido,chave};
+  }else{
+    const u=lista.find(u=>(u.chave===chave||u.email===chave)&&u.senha===senha);
+    if(!u){$("msg").textContent="Apelido ou senha errados.";return}
+    usuario={apelido:u.apelido,chave:u.chave};
+  }
+  guarda.gravar("sessao",usuario);registra('login');mostraArea();$("mLogin").classList.remove("show");
+};
+usuario=guarda.ler("sessao");if(usuario&&!usuario.chave)usuario=null;mostraArea();
+
+// ===== 4.5 SENHA, PERFIL E AVATAR =====
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function perfil(){return Object.assign({anim:"gira",foto:null},guarda.ler("perfil:"+usuario.chave)||{})}
+function salvaPerfil(p){guarda.gravar("perfil:"+usuario.chave,p);mostraArea();marcaAnims()}
+function fotoHtml(){
+  const p=perfil();
+  if(p.foto&&String(p.foto).startsWith("data:image/"))return `<img class="foto" src="${p.foto}" alt="Sua foto">`;
+  return `<span class="foto">${esc((usuario.apelido[0]||"?").toUpperCase())}</span>`;
+}
+function marcaAnims(){if(!usuario)return;[...$("anims").children].forEach(b=>b.classList.toggle("on",b.dataset.a===perfil().anim))}
+
+document.addEventListener("click",e=>{
+  const o=e.target.closest(".olho");
+  if(o){
+    const i=$(o.dataset.alvo),ver=i.type==="password";
+    i.type=ver?"text":"password";
+    o.textContent=ver?"🙈":"👁";
+    o.setAttribute("aria-label",ver?"Ocultar senha":"Mostrar senha");
+  }
+  if(e.target.closest("#abrirPerfil")){marcaAnims();$("msgPerfil").textContent="";$("mPerfil").classList.add("show")}
+});
+$("fecharPerfil").onclick=()=>$("mPerfil").classList.remove("show");
+$("anims").addEventListener("click",e=>{
+  const a=e.target.dataset.a; if(!a||!usuario)return;
+  salvaPerfil({...perfil(),anim:a});
+});
+$("tirarFoto").onclick=()=>{if(usuario)salvaPerfil({...perfil(),foto:null})};
+$("foto").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f||!usuario)return;
+  if(!f.type.startsWith("image/")){$("msgPerfil").textContent="Escolha um arquivo de imagem.";return}
+  if(f.size>5*1024*1024){$("msgPerfil").textContent="Foto muito grande (máx. 5 MB).";return}
+  const leitor=new FileReader();
+  leitor.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      // recorta no centro e encolhe para 160x160 (cabe no armazenamento)
+      const c=document.createElement("canvas");c.width=c.height=160;
+      const lado=Math.min(img.width,img.height);
+      c.getContext("2d").drawImage(img,(img.width-lado)/2,(img.height-lado)/2,lado,lado,0,0,160,160);
+      salvaPerfil({...perfil(),foto:c.toDataURL("image/jpeg",0.85)});
+      $("msgPerfil").textContent="";
+    };
+    img.onerror=()=>{$("msgPerfil").textContent="Não consegui abrir essa imagem."};
+    img.src=leitor.result;
+  };
+  leitor.readAsDataURL(f);
+  e.target.value="";
+});
+
+// ===== 4.55 RECUPERAR SENHA (simulado) =====
+let pedido=null; // {chave, codigo, expira, tentativas}
+function rDiz(t,ok){$("rMsg").textContent=t;$("rMsg").style.color=ok?"#4ade80":""}
+let recModo='senha';
+function abreRecuperar(modo){
+  recModo=modo||'senha';
+  $('rTitulo').textContent=recModo==='senha'?'Recuperar senha':'Recuperar apelido';
+  $('rTexto').textContent=recModo==='senha'?'Digite o e-mail cadastrado. Vamos enviar um código de 6 números.':'Digite o e-mail cadastrado. Vamos enviar o seu apelido.';
+  $('rApBox').style.display='none';
+  pedido=null;
+  $("rPasso1").style.display="block";$("rPasso2").style.display="none";$("rCaixa").style.display="none";
+  ["rEmail","rCodigo","rSenha","rSenha2"].forEach(id=>$(id).value="");rDiz("");
+  $("mLogin").classList.remove("show");$("mRecuperar").classList.add("show");
+}
+$("esqSenha").onclick=()=>abreRecuperar('senha');$("esqApelido").onclick=()=>abreRecuperar('apelido');
+$("rFechar").onclick=()=>$("mRecuperar").classList.remove("show");
+$("rEnviar").onclick=()=>{
+  const email=$("rEmail").value.trim().toLowerCase();
+  if(!/^\S+@\S+\.\S+$/.test(email)){rDiz("Digite um e-mail válido.");return}
+  const conta=(guarda.ler("contas")||[]).find(u=>u.email===email);
+  if(recModo==='apelido'){
+    if(conta){$('rApBox').innerHTML=`📬 <b>Simulação de e-mail</b><br>Para: ${esc(email)}<br>Seu apelido é: <b style='font-size:1.1rem'>${esc(conta.apelido)}</b>`;$('rApBox').style.display='block'}
+    rDiz('Se esse e-mail estiver cadastrado, enviamos o seu apelido.',true);return;
+  }
+  if(conta){
+    const n=new Uint32Array(1);crypto.getRandomValues(n);
+    const codigo=String(n[0]%1000000).padStart(6,"0");
+    pedido={chave:conta.chave,codigo,expira:Date.now()+10*60*1000,tentativas:0};
+    $("rCaixa").innerHTML=`📬 <b>Simulação de e-mail</b><br>Para: ${esc(email)}<br>Seu código: <b style="font-size:1.2rem;letter-spacing:3px">${codigo}</b><br><small style="color:var(--muted)">Vale por 10 minutos. Num site de verdade, ele chegaria na caixa de entrada.</small>`;
+    $("rCaixa").style.display="block";
+  }
+  // mesma resposta exista a conta ou não: não revela quem tem cadastro
+  $("rPasso1").style.display="none";$("rPasso2").style.display="block";
+  rDiz("Se esse e-mail estiver cadastrado, enviamos um código.",true);
+};
+$("rTrocar").onclick=()=>{
+  if(!pedido){rDiz("Não há código ativo. Cancele e peça outro.");return}
+  if(Date.now()>pedido.expira){pedido=null;rDiz("O código expirou. Peça outro.");return}
+  if(pedido.tentativas>=5){pedido=null;rDiz("Muitas tentativas. Peça um código novo.");return}
+  if($("rCodigo").value.trim()!==pedido.codigo){pedido.tentativas++;rDiz("Código errado.");return}
+  const s=$("rSenha").value;
+  if(s.length<6){rDiz("A senha precisa de 6 ou mais caracteres.");return}
+  if(s!==$("rSenha2").value){rDiz("As senhas não são iguais.");return}
+  const lista=guarda.ler("contas")||[];
+  const c=lista.find(u=>u.chave===pedido.chave);
+  if(c)c.senha=s;
+  guarda.gravar("contas",lista);pedido=null;
+  $("mRecuperar").classList.remove("show");
+  $("mLogin").classList.add("show");modo(false);
+  $("msg").style.color="#4ade80";$("msg").textContent="Senha trocada! Entre com a nova senha.";
+};
+
+// ===== 4.6 MATRIX SUBINDO =====
+(function(){
+  const c=$("matrix"),x=c.getContext("2d"),tam=16;
+  const letras="アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789".split("");
+  let colunas=[];
+  function ajusta(){
+    c.width=innerWidth;c.height=innerHeight;
+    colunas=Array.from({length:Math.ceil(c.width/tam)},()=>c.height+Math.random()*c.height);
+  }
+  function quadro(){
+    const ac=document.documentElement.classList.contains("acess");x.fillStyle=ac?"rgba(85,94,107,.12)":"rgba(17,17,17,.12)";x.fillRect(0,0,c.width,c.height);
+    x.fillStyle=ac?"#66b3ff":"#1fbf4a";x.font=tam+"px monospace";
+    colunas.forEach((y,i)=>{
+      x.fillText(letras[Math.floor(Math.random()*letras.length)],i*tam,y);
+      colunas[i]=(y<0&&Math.random()>.975)?c.height:y-tam;
+    });
+  }
+  ajusta();addEventListener("resize",ajusta);
+  if(!matchMedia("(prefers-reduced-motion:reduce)").matches)setInterval(quadro,55);
+})();
+
+// ===== 6. BANCO JSON (localStorage + IndexedDB p/ vídeos) =====
+// db = {config, admin(hash), catalogo, views, gostos, comentarios, acessos}
+const db=Object.assign({config:{email:'contato@seusite.com'},admin:null,catalogo:null,views:[],gostos:[],comentarios:[],acessos:[],salvos:[]},guarda.ler('db')||{});
+function salvaDb(){db.catalogo=ANIMES;guarda.gravar('db',db)}
+if(db.catalogo)ANIMES.splice(0,ANIMES.length,...db.catalogo);
+ANIMES.forEach(a=>{
+  a.g=a.g||'Aventura';
+  a.tipo=a.tipo||(['Ação','Terror','Comédia'].includes(a.g)?'Filme':'Anime');
+  a.sinopse=a.sinopse||'Sinopse de exemplo de '+a.t+'. Publique conteúdo novo pelo painel do admin.';
+  a.eps=a.eps||Array.from({length:a.tipo==='Filme'?1:6},(_,k)=>({n:k+1,titulo:a.tipo==='Filme'?a.t:'Episódio '+(k+1),v:{}}));
+});
+const idb=new Promise((ok,no)=>{try{const r=indexedDB.open('animeflix',1);r.onupgradeneeded=()=>r.result.createObjectStore('v');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}catch(e){no(e)}});
+idb.catch(()=>{});
+function vPut(k,b){return idb.then(d=>new Promise((ok,no)=>{const t=d.transaction('v','readwrite');t.objectStore('v').put(b,k);t.oncomplete=ok;t.onerror=()=>no(t.error)}))}
+function vGet(k){return idb.then(d=>new Promise((ok,no)=>{const q=d.transaction('v').objectStore('v').get(k);q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)}))}
+function registra(tipo){db.acessos.push({u:usuario.apelido,tipo,q:Date.now()});if(db.acessos.length>300)db.acessos.shift();salvaDb()}
+function pct(t){const g=db.gostos.filter(x=>x.t===t);return g.length?Math.round(g.filter(x=>x.v).length/g.length*100)+'% gostaram':'sem avaliações'}
+
+// ===== 7. CARDS, LANÇAMENTOS E MAIS ASSISTIDOS =====
+function card(a){return `<div class='card' data-t='${esc(a.t)}'>${poster(a,`<video class='prev' muted loop playsinline></video><span class='rate'>${esc(a.n)}</span><div class='sin'><strong style='font-size:.85rem'>${esc(a.t)}</strong><span>${esc(a.tipo)} • ${esc(a.g)} • ${esc(a.a)}</span><span>★ ${esc(a.n)} • ${pct(a.t)}</span><small>${esc(a.sinopse)}</small></div>`)}<p>${esc(a.t)}</p></div>`}
+function desenha(lista,titulo){
+  $('grade').innerHTML=lista.map(card).join('')||'<p>Nenhum conteúdo aqui ainda. O admin pode publicar pelo painel.</p>';
+  $('tituloGrade').textContent=titulo||(lista.length===ANIMES.length?'Animes Online':'Resultados ('+lista.length+')');
+  const fila=(ti,arr)=>arr.length?`<div class='sec'><h2>${ti}</h2><div class='grid'>${arr.map(card).join('')}</div></div>`:'';
+  $('lanc').innerHTML=fila('Lançamentos',ANIMES.slice().sort((x,y)=>(y.criado||0)-(x.criado||0)||y.a-x.a).slice(0,5));
+  const cont=t=>db.views.filter(v=>v.t===t).length;
+  $('maisv').innerHTML=fila('Mais assistidos'+(lista.length<ANIMES.length?' (neste filtro)':''),lista.map(a=>[a,cont(a.t)]).filter(p=>p[1]>0).sort((p,q)=>q[1]-p[1]).slice(0,5).map(p=>p[0]));
+}
+// cena no hover: toca um trecho do vídeo enviado (se existir)
+async function previa(c,on){
+  const v=c.querySelector('.prev');if(!v)return;
+  if(!on){v.classList.remove('on');v.pause();return}
+  const a=ANIMES.find(x=>x.t===c.dataset.t),ep=a&&a.eps.find(e=>Object.keys(e.v).length);if(!ep)return;
+  try{
+    if(!v.src){const b=await vGet(ep.v[Object.keys(ep.v)[0]]);if(!b)return;v.src=URL.createObjectURL(b);await new Promise(r=>v.addEventListener('loadedmetadata',r,{once:true}))}
+    if(!c.matches(':hover'))return;
+    v.currentTime=v.duration*.2;v.classList.add('on');v.play().catch(()=>{});
+  }catch(e){}
+}
+document.addEventListener('mouseover',e=>{const c=e.target.closest('.card');if(c&&!c.contains(e.relatedTarget))previa(c,true)});
+document.addEventListener('mouseout',e=>{const c=e.target.closest('.card');if(c&&!c.contains(e.relatedTarget))previa(c,false)});
+
+// ===== 8. PÁGINA DO CONTEÚDO (player, episódios, discussão, parecidos) =====
+let cur=null;
+function htmlComs(t){return db.comentarios.filter(c=>c.t===t).slice(-20).reverse().map(c=>`<p style='margin:8px 0'><b>${esc(c.u)}</b> <small style='color:var(--muted)'>${new Date(c.q).toLocaleDateString('pt-BR')}</small><br>${esc(c.x)}</p>`).join('')||'<p>Seja o primeiro a comentar!</p>'}
+function abreDetalhe(t,n){
+  const a=ANIMES.find(x=>x.t===t);if(!a)return;
+  const ep=a.eps.find(e=>e.n===n)||a.eps[0];cur={a,ep};
+  db.views.push({u:usuario?usuario.apelido:'visitante',t,g:a.g,q:Date.now()});salvaDb();
+  const auds=ep.a?Object.keys(ep.a):[],aud=idiomasUser().find(l=>auds.includes(l))||auds[0],vv=aud?ep.a[aud]:ep.v,qs=Object.keys(vv),meu=usuario&&db.gostos.find(g=>g.u===usuario.chave&&g.t===t),salvo=usuario&&db.salvos.some(s=>s.u===usuario.chave&&s.t===t),sem=ANIMES.filter(x=>x!==a&&x.g===a.g).slice(0,5);
+  $('detCorpo').innerHTML=`<h3>${esc(a.t)} — ${esc(ep.titulo)}</h3>
+  <div id='vbox' style='position:relative'>${qs.length?`<video id='vp' controls playsinline></video><button id='pulaIntro' class='btn' style='display:none;position:absolute;right:12px;bottom:56px'>Pular introdução ⏭</button>`:`<div class='player'>Sem vídeo enviado ainda.<br>O admin pode subir pelo painel.</div>`}</div>
+  ${qs.length?`<label>Qualidade <select id='qual'>${qs.map(q=>`<option>${q}</option>`).join('')}</select></label>`:''}
+  <p style='color:var(--muted);margin:8px 0'>🔊 Áudio: ${auds.length?auds.map(l=>IDIOMAS[l]).join(', '):'não informado'} • 💬 Legenda: ${ep.s&&Object.keys(ep.s).length?Object.keys(ep.s).map(l=>IDIOMAS[l]).join(', '):'não informada'}</p>${auds.length>1?`<label>Áudio <select id='selAud'>${auds.map(l=>`<option value='${l}' ${l===aud?'selected':''}>${IDIOMAS[l]}</option>`).join('')}</select></label> `:''}${ep.s&&Object.keys(ep.s).length?`<label>Legenda <select id='selLeg'><option value=''>Desligada</option>${Object.keys(ep.s).map(l=>`<option value='${l}'>${IDIOMAS[l]}</option>`).join('')}</select></label>`:''}
+  <p style='color:var(--muted);margin:8px 0'>${esc(a.tipo)} • ${esc(a.g)} • ${esc(a.a)} • ★ ${esc(a.n)} • ${pct(t)}</p>
+  <p>${esc(a.sinopse)}</p>
+  <div style='margin:10px 0'><button class='btn ${meu&&meu.v?'':'ghost'}' data-gosto='1'>👍 Gostei</button> <button class='btn ${meu&&!meu.v?'':'ghost'}' data-gosto='0'>👎 Não gostei</button> <button class='btn ${salvo?'':'ghost'}' data-salvar='1'>💾 ${salvo?'Salvo':'Salvar'}</button></div>
+  <h2 style='margin-top:18px'>Episódios</h2><div class='tabs' style='flex-wrap:wrap'>${a.eps.map(e=>`<button data-ep='${e.n}' class='${e===ep?'on':''}'>${e.n}</button>`).join('')}</div>
+  <h2>Discussão</h2><textarea id='cTxt' rows='2' maxlength='300' placeholder='O que você achou?'></textarea><button class='btn' id='cEnv'>Comentar</button><div id='cLista'>${htmlComs(t)}</div>
+  <h2 style='margin-top:18px'>Parecidos com este</h2><div class='grid'>${sem.map(card).join('')||'<p>Nenhum ainda.</p>'}</div>
+  <button class='btn ghost' data-fecha='mDetalhe' style='margin-top:12px'>Fechar</button>`;
+  cur.vv=vv;cur.aud=aud;
+  if(qs.length){const q=qs.includes('720p')?'720p':qs[0];$('qual').value=q;ligaPlayer();tocar(q,0,true);
+    const leg=(ep.s&&aud!==idiomasUser()[0])?idiomasUser().find(l=>ep.s[l]):'';
+    if(leg){$('selLeg').value=leg;ligaLegenda(leg)}}
+}
+function tocar(q,t0,play){
+  const v=$('vp');
+  vGet((cur.vv||cur.ep.v)[q]).then(b=>{
+    if(!b)throw 0;
+    if(v.dataset.u)URL.revokeObjectURL(v.dataset.u);
+    v.dataset.u=URL.createObjectURL(b);v.src=v.dataset.u;
+    v.onloadedmetadata=()=>{v.currentTime=t0||0;if(play)v.play().catch(()=>{})};
+  }).catch(()=>{$('vbox').innerHTML=`<div class='player'>Não consegui abrir o vídeo.</div>`});
+}
+document.addEventListener('change',e=>{if(e.target.id==='qual'){const v=$('vp');tocar(e.target.value,v.currentTime,!v.paused)}});
+// captura o clique nos cards ANTES do player antigo
+document.addEventListener('click',e=>{
+  const c=e.target.closest('[data-t]');
+  if(c){e.stopImmediatePropagation();
+    abreDetalhe(c.dataset.t,1);$('mDetalhe').classList.add('show');$('detCorpo').scrollTop=0;return}
+  const f=e.target.closest('[data-fecha]');
+  if(f){$(f.dataset.fecha).classList.remove('show');
+    if(f.dataset.fecha==='mDetalhe')$('detCorpo').innerHTML='';
+    if(f.dataset.fecha==='mAdmin')admin=false}
+  const ep=e.target.closest('[data-ep]');if(ep&&cur){abreDetalhe(cur.a.t,+ep.dataset.ep);$('detCorpo').scrollTop=0}
+  const g=e.target.closest('[data-gosto]');
+  if(g&&cur){if(!pedeLogin())return;const v=+g.dataset.gosto;
+    db.gostos=db.gostos.filter(x=>!(x.u===usuario.chave&&x.t===cur.a.t));
+    db.gostos.push({u:usuario.chave,nome:usuario.apelido,t:cur.a.t,v,q:Date.now()});salvaDb();
+    document.querySelectorAll('[data-gosto]').forEach(b=>b.classList.toggle('ghost',+b.dataset.gosto!==v))}
+  const sv=e.target.closest('[data-salvar]');
+  if(sv&&cur){if(!pedeLogin())return;
+    const i=db.salvos.findIndex(s=>s.u===usuario.chave&&s.t===cur.a.t);
+    if(i>=0)db.salvos.splice(i,1);else db.salvos.push({u:usuario.chave,t:cur.a.t,q:Date.now()});
+    salvaDb();sv.classList.toggle('ghost',i>=0);sv.textContent=i>=0?'💾 Salvar':'💾 Salvo'}
+  if(e.target.id==='cEnv'){if(!pedeLogin())return;const x=$('cTxt').value.trim();if(!x)return;
+    db.comentarios.push({u:usuario.apelido,t:cur.a.t,x,q:Date.now()});salvaDb();
+    $('cTxt').value='';$('cLista').innerHTML=htmlComs(cur.a.t)}
+});
+
+// ===== 9. ADMIN (login separado, sessão só na memória) =====
+let admin=false;
+async function sha(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('animeflix:'+s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+const aMsg=(t,ok)=>{$('aMsg').textContent=t;$('aMsg').style.color=ok?'#4ade80':''};
+function admTela(){
+  const c=$('admCorpo');
+  if(!admin){c.innerHTML=`<h3>${db.admin?'Entrar como admin':'Criar senha do admin'}</h3><input id='aSenha' type='password' placeholder='Senha do admin (mín. 8)' autocomplete='off'><div class='msg' id='aMsg'></div><button class='btn' id='aEntrar' style='width:100%'>${db.admin?'Entrar':'Criar e entrar'}</button><button class='btn ghost' data-fecha='mAdmin' style='width:100%;margin-top:8px'>Fechar</button>`;return}
+  const ev=[...db.acessos.map(x=>({q:x.q,x:x.u+' entrou'})),...db.views.map(x=>({q:x.q,x:x.u+' assistiu '+x.t})),...db.gostos.map(x=>({q:x.q,x:(x.nome||x.u)+(x.v?' gostou 👍 de ':' não gostou 👎 de ')+x.t})),...db.comentarios.map(x=>({q:x.q,x:x.u+' comentou em '+x.t}))].sort((a,b)=>b.q-a.q).slice(0,40);
+  const gen=Object.keys(GENEROS).filter(g=>g!=='Todos');
+  c.innerHTML=`<h3>Painel do admin</h3><h2>Publicar conteúdo</h2>
+  <input id='nT' placeholder='Título (se já existir, adiciona o episódio)'>
+  <select id='nTipo'><option>Filme</option><option>Série</option><option>Anime</option></select>
+  <select id='nG'>${gen.map(g=>`<option>${g}</option>`).join('')}</select>
+  <input id='nA' type='number' placeholder='Ano'><input id='nN' type='number' min='1' placeholder='Episódio nº (padrão 1)'>
+  <textarea id='nS' rows='3' placeholder='Sinopse'></textarea>
+  <label>Idioma do áudio destes vídeos<select id='nAud'>${Object.keys(IDIOMAS).map(k=>`<option value='${k}'>${IDIOMAS[k]}</option>`).join('')}</select></label>
+  <p style='margin-top:8px'>Legendas (.vtt ou .srt, opcional), uma por idioma:</p>${Object.keys(IDIOMAS).map(k=>`<label>${IDIOMAS[k]}<input type='file' accept='.vtt,.srt' data-leg='${k}'></label>`).join('')}
+  ${['360p','720p','1080p'].map(q=>`<label>Vídeo ${q} (opcional)<input type='file' accept='video/*' data-q='${q}'></label>`).join('')}
+  <div id='nIntroBox' style='display:none;border:1px dashed var(--line);border-radius:8px;padding:10px;margin:8px 0'><b>⏭ Pular introdução (séries e animes)</b><video id='nPrev' controls style='width:100%;border-radius:8px;margin:6px 0;display:none'></video><p style='color:var(--muted);font-size:.85rem'>Escolha um vídeo acima, dê play, pare onde a abertura começa e clique em Marcar início. Depois pare onde ela termina e clique em Marcar fim.</p><button class='btn ghost' type='button' id='mIni'>⏱ Marcar início</button> <button class='btn ghost' type='button' id='mFim'>⏱ Marcar fim</button><input id='nIni' type='number' step='0.1' min='0' placeholder='Início da intro (segundos)'><input id='nFim' type='number' step='0.1' min='0' placeholder='Fim da intro (segundos)'></div>
+  <div class='msg' id='aMsg'></div><button class='btn' id='aPub' style='width:100%'>Publicar</button>
+  <h2 style='margin-top:18px'>Quem acessou</h2><div style='max-height:180px;overflow:auto;font-size:.85rem'>${ev.map(x=>`<p>${new Date(x.q).toLocaleString('pt-BR')} — ${esc(x.x)}</p>`).join('')||'<p>Ninguém ainda.</p>'}</div>
+  <h2 style='margin-top:18px'>Banco de dados (JSON)</h2><textarea id='aJson' rows='8' readonly></textarea>
+  <input id='aMail' value='${esc(db.config.email)}'><button class='btn ghost' id='aMailSalva' style='width:100%;margin-bottom:8px'>Salvar e-mail de contato</button>
+  <button class='btn ghost' data-fecha='mAdmin' style='width:100%'>Sair do painel</button>`;
+  $('aJson').value=JSON.stringify({config:db.config,usuarios:(guarda.ler('contas')||[]).map(({senha,...r})=>r),catalogo:ANIMES.map(({eps,...r})=>({...r,episodios:eps.length})),views:db.views,gostos:db.gostos,comentarios:db.comentarios,acessos:db.acessos},null,2);
+}
+function abreAdmin(){$('mAdmin').classList.add('show');admTela()}
+document.addEventListener('click',async e=>{
+  if(e.target.id==='aEntrar'){
+    const s=$('aSenha').value;if(s.length<8){aMsg('A senha precisa de 8 ou mais caracteres.');return}
+    const h=await sha(s);
+    if(!db.admin){db.admin=h;salvaDb();admin=true}else if(db.admin===h)admin=true;else{aMsg('Senha errada.');return}
+    admTela();
+  }
+  if(e.target.id==='aMailSalva'){db.config.email=$('aMail').value.trim();salvaDb();mostraMail();aMsg('E-mail salvo.',true)}
+  if(e.target.id==='aPub'){
+    const t=$('nT').value.trim(),n=+$('nN').value||1,files=[...document.querySelectorAll('#admCorpo [data-q]')].filter(i=>i.files[0]);
+    if(!t||!files.length){aMsg('Preencha o título e envie ao menos um vídeo.');return}
+    let a=ANIMES.find(x=>x.t.toLowerCase()===t.toLowerCase());
+    if(!a){a={t,n:'Novo',a:+$('nA').value||new Date().getFullYear(),h:Math.floor(Math.random()*360),g:$('nG').value,tipo:$('nTipo').value,sinopse:$('nS').value.trim()||'Sem sinopse.',criado:Date.now(),eps:[]};ANIMES.unshift(a)}
+    let ep=a.eps.find(x=>x.n===n);
+    if(!ep){ep={n,titulo:a.tipo==='Filme'?a.t:'Episódio '+n,v:{}};a.eps.push(ep);a.eps.sort((x,y)=>x.n-y.n)}
+    try{
+      const lang=$('nAud').value;ep.a=ep.a||{};ep.a[lang]=ep.a[lang]||{};if(!ep.base)ep.base=lang;
+      for(const i of files){const k=a.t+'|'+n+'|'+lang+'|'+i.dataset.q;await vPut(k,i.files[0]);ep.a[lang][i.dataset.q]=k;if(lang===ep.base)ep.v[i.dataset.q]=k}
+      for(const li of document.querySelectorAll('#admCorpo [data-leg]')){const f=li.files[0];if(!f)continue;const l=li.dataset.leg;let tx=await f.text();if(!/^\uFEFF?WEBVTT/.test(tx))tx='WEBVTT\n\n'+tx.replace(/\r/g,'').replace(/(\d+:\d+:\d+),(\d+)/g,'$1.$2');const ks=a.t+'|'+n+'|leg|'+l;await vPut(ks,new Blob([tx],{type:'text/vtt'}));ep.s=ep.s||{};ep.s[l]=ks}
+      if(a.tipo!=='Filme'&&+$('nFim').value>+$('nIni').value)ep.intro={ini:+$('nIni').value||0,fim:+$('nFim').value}
+    }
+    catch(err){aMsg('Não consegui guardar o vídeo (sem espaço no navegador?).');return}
+    salvaDb();desenha(ANIMES);aMsg('Publicado! Já aparece em Lançamentos.',true);
+  }
+});
+
+// ===== 9.5 VISITANTE x LOGADO =====
+// ver conteúdo é livre; salvar, curtir e comentar pedem conta
+function pedeLogin(){
+  if(usuario)return true;
+  $('mLogin').classList.add('show');modo(false);
+  $('msg').textContent='Entre para salvar, curtir ou comentar.';
+  return false;
+}
+$('minhaLista').onclick=e=>{
+  e.preventDefault();if(!pedeLogin())return;
+  const l=ANIMES.filter(a=>db.salvos.some(s=>s.u===usuario.chave&&s.t===a.t));
+  desenha(l,'Minha lista ('+l.length+')');
+};
+
+// ===== 9.8 PERFIL: 6 ABAS =====
+const IDIOMAS={pt:'Português (Brasil)',en:'Inglês',de:'Alemão',ja:'Japonês'};
+function idiomasUser(){const p=usuario?perfil().idiomas:null;return Array.isArray(p)&&p.length===4?p:['pt','en','de','ja']}
+// dono = conta que configurou o admin (ou a 1ª conta criada, antes da configuração)
+function ehDono(){const c=guarda.ler('contas')||[];return !!usuario&&(db.dono?db.dono===usuario.chave:!!c[0]&&c[0].chave===usuario.chave)}
+function abaPerfil(id){
+  [...$('pAbas').children].forEach(b=>b.classList.toggle('on',b.dataset.p===id));
+  document.querySelectorAll('.pp').forEach(p=>p.style.display=p.id===id?'block':'none');
+  ({p2:abaIdioma,p3:abaAdmin,p4:abaLista,p5:abaOffline,p6:abaConta}[id]||(()=>{}))();
+}
+function abaIdioma(){
+  $('p2').innerHTML=`<p style='color:var(--muted)'>Ordem de preferência (escolhe áudio e legenda dos vídeos):</p>`+idiomasUser().map((c,i)=>`<p style='display:flex;gap:8px;align-items:center;margin:8px 0'><b>${i+1}º</b><span style='flex:1'>${IDIOMAS[c]}${i===0?' (principal)':i===1?' (secundário)':''}</span><button class='btn ghost' data-idi='${i}' data-d='-1'>↑</button><button class='btn ghost' data-idi='${i}' data-d='1'>↓</button></p>`).join('')+`<p style='color:var(--muted);font-size:.85rem'>A tradução de todo o site ainda não existe: por enquanto isto vale para áudio e legenda.</p>`;
+}
+const gDiz=t=>{const m=$('gMsg');if(m)m.textContent=t};
+let admTent=0,admBloq=0,admCod=null;
+function abaAdmin(){
+  const el=$('p3');
+  if(!ehDono()){el.innerHTML='<p>Sem permissão.</p>';return}
+  if(!db.adm){el.innerHTML=`<p style='color:var(--muted)'>Primeiro acesso: crie a senha e a palavra-chave do admin.</p><input id='gSenha' type='password' placeholder='Senha do admin (mín. 10)' autocomplete='off'><input id='gPal' type='password' placeholder='Palavra-chave (mín. 5)' autocomplete='off'><div class='msg' id='gMsg'></div><button class='btn' id='gCria' style='width:100%'>Salvar</button>`;return}
+  el.innerHTML=`<input id='gSenha' type='password' placeholder='Senha do admin' autocomplete='off'><input id='gPal' type='password' placeholder='Palavra-chave' autocomplete='off'><select id='gCanal'><option>e-mail</option><option>WhatsApp</option></select><div class='msg' id='gMsg'></div><button class='btn' id='gEnvia' style='width:100%'>Continuar</button><div id='gCod' style='display:none'><div id='gCaixa' style='background:#111;border:1px dashed var(--line);border-radius:8px;padding:10px;font-size:.9rem;margin:8px 0'></div><input id='gCodigo' inputmode='numeric' maxlength='6' placeholder='Código de 6 números'><button class='btn' id='gEntra' style='width:100%'>Entrar no painel</button></div>`;
+}
+function abaLista(){
+  const sv=db.salvos.filter(s=>s.u===usuario.chave).map(s=>s.t);
+  const hist=[...new Set(db.views.filter(v=>v.u===usuario.apelido).map(v=>v.t).reverse())].slice(0,8);
+  const li=a=>a.length?a.map(t=>`<p><button class='link' data-vet='${esc(t)}'>${esc(t)}</button></p>`).join(''):`<p style='color:var(--muted)'>Nada ainda.</p>`;
+  $('p4').innerHTML=`<h2>Minha lista</h2>${li(sv)}<h2 style='margin-top:14px'>Assistidos recentemente</h2>${li(hist)}`;
+}
+async function abaOffline(){
+  let uso='indisponível';
+  try{const e=await navigator.storage.estimate();uso=(e.usage/1048576).toFixed(0)+' MB usados de '+(e.quota/1048576).toFixed(0)+' MB'}catch(err){}
+  $('p5').innerHTML=`<p>Espaço no seu aparelho: <b>${uso}</b></p><p style='color:var(--muted)'>Aqui ficarão os vídeos baixados para ver sem internet, guardados na memória do seu aparelho. Isso depende do site publicado com HTTPS e service worker (próxima etapa).</p>`;
+}
+function abaConta(){
+  const c=(guarda.ler('contas')||[]).find(u=>u.chave===usuario.chave)||{};
+  $('p6').innerHTML=`<p>Apelido: <b>${esc(usuario.apelido)}</b><br>E-mail: <b>${esc(c.email||'não cadastrado')}</b></p><input id='sAtual' type='password' placeholder='Senha atual'><input id='sNova' type='password' placeholder='Nova senha (mín. 6)'><div class='msg' id='sMsg'></div><button class='btn' id='sTroca' style='width:100%'>Trocar senha</button>`;
+}
+function ligaLegenda(l){
+  const v=$('vp');if(!v)return;
+  v.querySelectorAll('track').forEach(t=>t.remove());
+  if(!l||!cur.ep.s||!cur.ep.s[l])return;
+  vGet(cur.ep.s[l]).then(b=>{if(!b)return;const t=document.createElement('track');t.kind='subtitles';t.label=IDIOMAS[l];t.srclang=l;t.src=URL.createObjectURL(b);t.default=true;v.appendChild(t);t.track.mode='showing'}).catch(()=>{});
+}
+document.addEventListener('change',e=>{
+  if(e.target.id==='selAud'&&cur&&$('vp')){
+    const v=$('vp'),t0=v.currentTime,pl=!v.paused;
+    cur.aud=e.target.value;cur.vv=cur.ep.a[cur.aud];
+    const qs=Object.keys(cur.vv),q=qs.includes($('qual').value)?$('qual').value:qs[0];
+    $('qual').innerHTML=qs.map(x=>`<option>${x}</option>`).join('');$('qual').value=q;tocar(q,t0,pl);
+  }
+  if(e.target.id==='selLeg')ligaLegenda(e.target.value);
+});
+document.addEventListener('click',async e=>{
+  const id=e.target.id;
+  if(e.target.closest('#abrirPerfil')){$('pAbas').querySelector('[data-p=p3]').style.display=ehDono()?'':'none';abaPerfil('p1')}
+  const pa=e.target.closest('#pAbas [data-p]');if(pa)abaPerfil(pa.dataset.p);
+  const ib=e.target.closest('[data-idi]');
+  if(ib){const i=+ib.dataset.idi,j=i+(+ib.dataset.d);if(j>=0&&j<4){const l=idiomasUser().slice();[l[i],l[j]]=[l[j],l[i]];salvaPerfil({...perfil(),idiomas:l});abaIdioma()}}
+  const vt=e.target.closest('[data-vet]');
+  if(vt){$('mPerfil').classList.remove('show');abreDetalhe(vt.dataset.vet,1);$('mDetalhe').classList.add('show')}
+  if(id==='sTroca'){
+    const l=guarda.ler('contas')||[],c=l.find(u=>u.chave===usuario.chave),m=$('sMsg');
+    if(!c||c.senha!==$('sAtual').value){m.textContent='Senha atual errada.';return}
+    if($('sNova').value.length<6){m.textContent='A nova senha precisa de 6 ou mais caracteres.';return}
+    c.senha=$('sNova').value;guarda.gravar('contas',l);m.style.color='#4ade80';m.textContent='Senha trocada!';
+  }
+  // --- porta do admin: senha + palavra-chave + código ---
+  if(id==='gCria'){
+    const s=$('gSenha').value,p=$('gPal').value.trim().toLowerCase();
+    if(s.length<10||p.length<5){gDiz('Senha: 10+ caracteres. Palavra-chave: 5+.');return}
+    db.adm={pw:await sha(s),kw:await sha('kw:'+p)};db.dono=usuario.chave;salvaDb();abaAdmin();
+  }
+  if(id==='gEnvia'){
+    if(Date.now()<admBloq){gDiz('Muitas tentativas. Tente de novo em alguns minutos.');return}
+    const ok=(await sha($('gSenha').value))===db.adm.pw&&(await sha('kw:'+$('gPal').value.trim().toLowerCase()))===db.adm.kw;
+    if(!ok){if(++admTent>=5){admBloq=Date.now()+5*60000;admTent=0}gDiz('Dados incorretos.');return}
+    const n=new Uint32Array(1);crypto.getRandomValues(n);
+    admCod={c:String(n[0]%1000000).padStart(6,'0'),exp:Date.now()+5*60000,t:0};
+    $('gCaixa').innerHTML=`📬 <b>Simulação</b> de envio por ${esc($('gCanal').value)}<br>Código: <b style='font-size:1.2rem;letter-spacing:3px'>${admCod.c}</b><br><small style='color:var(--muted)'>Num site de verdade, chegaria no seu e-mail ou WhatsApp.</small>`;
+    $('gCod').style.display='block';gDiz('');
+  }
+  if(id==='gEntra'){
+    if(!admCod||Date.now()>admCod.exp){admCod=null;gDiz('Código expirado. Recomece.');return}
+    if(++admCod.t>5){admCod=null;gDiz('Muitas tentativas.');return}
+    if($('gCodigo').value.trim()!==admCod.c){gDiz('Código errado.');return}
+    admCod=null;admin=true;$('mPerfil').classList.remove('show');abreAdmin();
+  }
+});
+
+// ===== 11. PULAR INTRO, PRÓXIMO EPISÓDIO E RECOMENDAÇÕES =====
+function ligaPlayer(){
+  const v=$('vp'),b=$('pulaIntro'),it=cur.ep.intro;
+  v.ontimeupdate=()=>{if(b)b.style.display=(it&&v.currentTime>=it.ini&&v.currentTime<it.fim)?'block':'none'};
+  if(b)b.onclick=()=>{v.currentTime=it.fim};
+  v.onended=fimVideo;
+}
+function fimVideo(){
+  const a=cur.a,nx=a.eps[a.eps.indexOf(cur.ep)+1],d=document.createElement('div');
+  d.style.cssText='position:absolute;inset:0;background:#000d;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:12px;border-radius:8px';
+  $('vbox').appendChild(d);
+  if(nx){
+    let s=5;d.innerHTML=`<b>Próximo: ${esc(nx.titulo)}</b><span id='proxS'></span><button class='btn ghost' id='proxC'>Cancelar</button>`;
+    const t=setInterval(()=>{if(!$('proxS')){clearInterval(t);return}$('proxS').textContent='Começa em '+s+'s';if(s--<=0){clearInterval(t);abreDetalhe(a.t,nx.n)}},1000);
+    $('proxC').onclick=()=>{clearInterval(t);d.remove()};
+  }else{
+    const sem=ANIMES.filter(x=>x!==a&&x.g===a.g).slice(0,4);
+    d.innerHTML=`<b>Você terminou ${esc(a.t)}!</b><span>${sem.length?'Parecidos para ver agora:':'Ainda não há parecidos.'}</span><div style='display:flex;gap:8px;flex-wrap:wrap;justify-content:center'>${sem.map(x=>`<button class='btn ghost' data-t='${esc(x.t)}'>${esc(x.t)}</button>`).join('')}</div><button class='link' id='proxC'>Fechar</button>`;
+    $('proxC').onclick=()=>d.remove();
+  }
+}
+// ajudantes do painel: prévia do vídeo e marcar a intro
+document.addEventListener('change',e=>{
+  if(e.target.id==='nTipo')$('nIntroBox').style.display=e.target.value==='Filme'?'none':'block';
+  if(e.target.matches('#admCorpo [data-q]')&&e.target.files[0]){const p=$('nPrev');p.src=URL.createObjectURL(e.target.files[0]);p.style.display='block'}
+});
+document.addEventListener('click',e=>{
+  if(e.target.id==='mIni'||e.target.id==='mFim')$(e.target.id==='mIni'?'nIni':'nFim').value=$('nPrev').currentTime.toFixed(1);
+});
+
+// brilho do vidro segue o ponteiro (botões liquid)
+document.addEventListener('pointermove',e=>{
+  const b=e.target.closest('.btn,.tabs button,#generos button,.liquid');if(!b)return;
+  const r=b.getBoundingClientRect();
+  b.style.setProperty('--x',((e.clientX-r.left)/r.width*100)+'%');
+  b.style.setProperty('--y',((e.clientY-r.top)/r.height*100)+'%');
+});
+
+// ===== 10. RODAPÉ E ACESSIBILIDADE =====
+function mostraMail(){$('mail').href='mailto:'+db.config.email;$('mailTxt').textContent=db.config.email}
+function aplicaAcess(on){
+  document.documentElement.classList.toggle('acess',on);
+  $('acess').setAttribute('aria-pressed',on);
+  $('acess').title=on?'Acessibilidade: ligada (clique para desligar)':'Acessibilidade (alto contraste)';$('acess').style.background=on?'var(--red)':'';
+}
+$('acess').onclick=()=>{const on=!document.documentElement.classList.contains('acess');aplicaAcess(on);guarda.gravar('acess',on)};
+mostraMail();aplicaAcess(guarda.ler('acess')===true);desenha(ANIMES);
+
+// ===== 5. PLAYER (só cai aqui quem está logado) =====
+document.addEventListener("click",e=>{
+  const el=e.target.closest("[data-t]"); if(!el)return;
+  if(!usuario){$("mLogin").classList.add("show");return}
+  const a=ANIMES.find(x=>x.t===el.dataset.t);
+  $("pTitulo").textContent=a.t;
+  $("pInfo").textContent=`Ano: ${a.a} • Nota: ${a.n}`;
+  $("pVideo").innerHTML="Aqui entra o seu vídeo legal.<br>Troque esta caixa por &lt;video src=\"seu-video.mp4\" controls&gt;";
+  $("mPlayer").classList.add("show");
+});
+$("fecharPlayer").onclick=()=>$("mPlayer").classList.remove("show");
+</script>
+</body>
+</html>
